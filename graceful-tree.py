@@ -5,9 +5,11 @@ import random
 
 st.set_page_config(layout="wide")
 
-st.title("Graceful Tree Puzzle (Randomized)")
+st.title("Graceful Tree Puzzle")
 
 st.markdown("""
+By Brandon Lieberthal
+
 Assign the odd numbers **1, 3, 5, 7, 9** to the nodes.
 
 **Goal:** Make every edge difference unique.
