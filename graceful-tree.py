@@ -14,7 +14,7 @@ Assign the odd numbers **1, 3, 5, 7, 9** to the nodes.
 """)
 
 # -----------------------------
-# Session State Initialization
+# Basic Setup
 # -----------------------------
 
 nodes = ["A", "B", "C", "D", "E"]
@@ -31,7 +31,6 @@ if "edges" not in st.session_state:
 # -----------------------------
 
 def generate_random_tree(node_list):
-    """Generate a random tree using Prüfer-like attachment."""
     nodes = node_list[:]
     random.shuffle(nodes)
 
@@ -39,8 +38,8 @@ def generate_random_tree(node_list):
     connected = [nodes[0]]
 
     for n in nodes[1:]:
-        attach_to = random.choice(connected)
-        edges.append((attach_to, n))
+        attach = random.choice(connected)
+        edges.append((attach, n))
         connected.append(n)
 
     return edges
@@ -53,7 +52,6 @@ if st.button("🔄 New Puzzle"):
     st.session_state.edges = generate_random_tree(nodes)
     st.rerun()
 
-# Generate initial tree if empty
 if not st.session_state.edges:
     st.session_state.edges = generate_random_tree(nodes)
 
@@ -66,7 +64,7 @@ edges = st.session_state.edges
 graph_col, control_col = st.columns([2, 1])
 
 # -----------------------------
-# Controls
+# Controls (right side)
 # -----------------------------
 
 with control_col:
@@ -76,11 +74,11 @@ with control_col:
         st.session_state.labels[node] = st.selectbox(
             f"Node {node}",
             available_labels,
-            key=node,
+            key=node
         )
 
 # -----------------------------
-# Edge Values
+# Edge calculations
 # -----------------------------
 
 edge_labels = {}
@@ -93,19 +91,23 @@ for u, v in edges:
 edge_values = list(edge_labels.values())
 
 duplicates = {
-    val for val in edge_values
-    if edge_values.count(val) > 1
+    v for v in edge_values
+    if edge_values.count(v) > 1
 }
 
 # -----------------------------
-# Build Graph
+# Graph layout (fixed + contained)
 # -----------------------------
 
 G = nx.Graph()
 G.add_edges_from(edges)
 
-# Compact layout (works for random trees)
-pos = nx.spring_layout(G, seed=42)
+pos = nx.spring_layout(G, seed=42, scale=0.8)
+
+# shrink inward so nothing hits border
+for k in pos:
+    x, y = pos[k]
+    pos[k] = (x * 0.9, y * 0.9)
 
 display_labels = {
     n: f"{n}\n{st.session_state.labels[n]}"
@@ -113,17 +115,17 @@ display_labels = {
 }
 
 # -----------------------------
-# Draw Graph
+# Draw graph (small + contained)
 # -----------------------------
 
 with graph_col:
 
-    fig, ax = plt.subplots(figsize=(4.5, 4))
+    fig, ax = plt.subplots(figsize=(3.8, 3.5))
 
     nx.draw_networkx_nodes(
         G,
         pos,
-        node_size=2200,
+        node_size=2000,
         ax=ax
     )
 
@@ -138,7 +140,7 @@ with graph_col:
         G,
         pos,
         labels=display_labels,
-        font_size=10,
+        font_size=9,
         ax=ax
     )
 
@@ -150,15 +152,18 @@ with graph_col:
             pos,
             edge_labels={(u, v): val},
             font_color=color,
-            font_size=10,
+            font_size=9,
             ax=ax
         )
 
     ax.set_axis_off()
+    ax.margins(0.15)
+    plt.tight_layout()
+
     st.pyplot(fig, use_container_width=False)
 
 # -----------------------------
-# Results
+# Results panel
 # -----------------------------
 
 st.subheader("Edge Differences")
@@ -170,7 +175,7 @@ for (u, v), val in edge_labels.items():
         st.write(f"⚫ {u}-{v}: {val}")
 
 # -----------------------------
-# Win Check
+# Win condition
 # -----------------------------
 
 node_ok = len(set(st.session_state.labels.values())) == 5
@@ -184,4 +189,4 @@ elif edge_ok:
     st.balloons()
 
 else:
-    st.warning("Node labels are unique, but edge differences repeat.")
+    st.warning("Node labels are unique, but some edge differences repeat.")
