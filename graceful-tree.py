@@ -30,7 +30,7 @@ available_labels = [1, 3, 5, 7, 9]
 # Layout
 # -----------------------------
 
-graph_col, control_col = st.columns([3, 1])
+graph_col, control_col = st.columns([2, 1])
 
 # -----------------------------
 # Controls
@@ -58,8 +58,8 @@ edge_labels = {}
 for u, v in edges:
     edge_labels[(u, v)] = abs(labels[u] - labels[v])
 
-# Detect duplicate edge values
 edge_values = list(edge_labels.values())
+
 duplicates = {
     value
     for value in edge_values
@@ -73,12 +73,13 @@ duplicates = {
 G = nx.Graph()
 G.add_edges_from(edges)
 
+# Compact node positions
 pos = {
-    "A": (0, 1),
-    "B": (-0.5, 0),
-    "C": (0.5, 0),
-    "D": (-1, -1),
-    "E": (0, -1)
+    "A": (0, 0.8),
+    "B": (-0.35, 0.1),
+    "C": (0.35, 0.1),
+    "D": (-0.7, -0.6),
+    "E": (0.0, -0.6)
 }
 
 display_labels = {}
@@ -92,12 +93,12 @@ for node in nodes:
 
 with graph_col:
 
-    fig, ax = plt.subplots(figsize=(7, 6))
+    fig, ax = plt.subplots(figsize=(4.5, 4))
 
     nx.draw_networkx_nodes(
         G,
         pos,
-        node_size=3500,
+        node_size=2200,
         ax=ax
     )
 
@@ -112,11 +113,11 @@ with graph_col:
         G,
         pos,
         labels=display_labels,
-        font_size=12,
+        font_size=10,
         ax=ax
     )
 
-    # Draw edge labels individually so duplicates can be red
+    # Draw edge labels individually
     for edge, value in edge_labels.items():
 
         color = "red" if value in duplicates else "black"
@@ -126,13 +127,13 @@ with graph_col:
             pos,
             edge_labels={edge: value},
             font_color=color,
-            font_size=12,
+            font_size=10,
             ax=ax
         )
 
     ax.set_axis_off()
 
-    st.pyplot(fig)
+    st.pyplot(fig, use_container_width=False)
 
 # -----------------------------
 # Results
